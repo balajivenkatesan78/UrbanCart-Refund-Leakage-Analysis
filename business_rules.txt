@@ -1,0 +1,34 @@
+ UrbanCart Business Rules
+
+ Refund validity rules (a refund is valid only if all are true)
+- R1: It has a matching return record.
+- R2: The return status is Received.
+- R3: The order has a successful payment.
+- R4: The refund amount is not more than the amount paid.
+- R5: There is only one refund per return.
+- R6: The return was requested within 30 days of the order date.
+
+ Exception counting
+- Each refund is counted once, using the first rule it fails.
+- Priority: R1, R3, R2, R5, R4, R6.
+- Value at Risk = full refund amount, except R4, where only the excess over the amount paid is counted.
+- Value at Risk is NOT proven loss and NOT a savings estimate. It means "needs investigation".
+
+ Key cleaning rules
+- Text fields are trimmed and converted to Proper Case.
+- Text dates are read as day-first (DD-MM-YYYY).
+- Payment modes are mapped to 5 standard values: UPI, Credit Card, Debit Card, Net Banking, COD.
+- Invalid order amounts (negative, blank, "N/A") are recalculated as Quantity x Unit Price and flagged.
+- Text refund amounts (e.g. "Rs. 2299") are converted to numbers. Negative refund amounts are treated as sign errors and flagged (assumption).
+- Exact duplicate rows are removed.
+- Orphan records, refunds with no return, and odd dates are flagged, NOT deleted.
+
+ Join rules
+- Refunds is the base table.
+- Left Outer joins to Returns (Return_ID), Orders (Order_ID) and Payments (Order_ID).
+- Row count and refund total must be unchanged after the joins.
+
+ Assumptions and limitations
+- The data is synthetic (dummy data).
+- The 30-day return window is an assumed policy.
+- City and approver samples are small, so differences are patterns to investigate, not proven trends.
